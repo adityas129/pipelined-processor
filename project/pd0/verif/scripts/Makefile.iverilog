@@ -1,0 +1,22 @@
+SRCLIST = $(shell cat $(CL_ROOT)/verif/scripts/design.f)
+SRC = $(addprefix $(CL_ROOT)/design/code/, $(SRCLIST)) $(CL_ROOT)/verif/tests/clockgen.v $(CL_ROOT)/design/design_wrapper.v
+# IVFLAGS = -g2012 -gassertions
+IVFLAGS = -g2005
+TOP = top
+
+# Normal tests, not c tests
+compile:
+	echo IVerilog Compilation
+	mkdir -p $(SIM_DIR)
+	cd $(SIM_DIR) && iverilog $(IVFLAGS) \
+		-o $(TOP) \
+		-s $(TOP) $(SRC) $(TEST_NAME).v \
+		-DIVERILOG \
+		-I$(CL_ROOT)/design
+
+run: compile
+	echo IVerilog Run
+	cd $(SIM_DIR) && vvp $(TOP)
+
+clean:
+	rm -rf $(SIM_DIR)

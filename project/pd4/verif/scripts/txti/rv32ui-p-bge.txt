@@ -1,0 +1,31 @@
+echo Verilator Compilation
+Verilator Compilation
+mkdir -p /home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd
+cd /home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd && verilator -sv \
+	 \
+	--cc /home/a273shar/project-files/project/pd4/design/code/pd.v /home/a273shar/project-files/project/pd4/design/code/imemory.v /home/a273shar/project-files/project/pd4/design/code/dmemory.v /home/a273shar/project-files/project/pd4/design/code/register_file.v /home/a273shar/project-files/project/pd4/verif/tests/clockgen.v /home/a273shar/project-files/project/pd4/design/design_wrapper.v \
+	/home/a273shar/project-files/project/pd4/verif/tests/test_pd.v \
+	--exe /home/a273shar/project-files/project/pd4/verif/tests/test_pd.cpp  \
+	-I/home/a273shar/project-files/project/pd4/design \
+	-top-module top \
+	--Mdir /home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd \
+	+define+MEM_PATH=\"/home/a273shar/rv32-benchmarks/individual-instructions/rv32ui-p-bge.x\" \
+	+define+TEST_VECTOR=\"/home/a273shar/project-files/project/pd4/verif/data/test_vector.x\" \
+	+define+MEM_DEPTH=1048576  2>&1 | tee output.log
+cat /home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd/output.log | bash /home/a273shar/project-files/project/pd4/verif/scripts/check_warnings.sh
+make -C /home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd -f Vtop.mk Vtop
+make[1]: Entering directory '/home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd'
+g++  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -faligned-new -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow       -c -o test_pd.o /home/a273shar/project-files/project/pd4/verif/tests/test_pd.cpp
+/usr/bin/perl /usr/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vtop.cpp > Vtop__ALLcls.cpp
+g++  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -faligned-new -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow       -c -o Vtop__ALLcls.o Vtop__ALLcls.cpp
+/usr/bin/perl /usr/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vtop__Dpi.cpp Vtop__Syms.cpp > Vtop__ALLsup.cpp
+g++  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -faligned-new -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow       -c -o Vtop__ALLsup.o Vtop__ALLsup.cpp
+      Archiving Vtop__ALL.a ...
+ar r Vtop__ALL.a Vtop__ALLcls.o Vtop__ALLsup.o
+ranlib Vtop__ALL.a
+g++    test_pd.o verilated.o verilated_dpi.o Vtop__ALL.a    -o Vtop -lm -lstdc++  2>&1 | c++filt
+make[1]: Leaving directory '/home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd'
+echo Verilator Run
+Verilator Run
+cd /home/a273shar/project-files/project/pd4/verif/sim/verilator/test_pd && ./Vtop
+Makefile.verilator:39: recipe for target 'run' failed

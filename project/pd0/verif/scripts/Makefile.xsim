@@ -1,0 +1,22 @@
+# sample script for running vivado synthesis
+
+SRCLIST = $(shell cat $(CL_ROOT)/verif/scripts/design.f)
+SRC = $(addprefix $(CL_ROOT)/design/code/, $(SRCLIST)) $(CL_ROOT)/design/signals.h $(CL_ROOT)/verif/tests/clockgen.v $(CL_ROOT)/design/design_wrapper.v
+XSIM_ARGS = -i $(CL_ROOT)/design/ -i $(CL_ROOT)/design/code/ 
+TOP = top
+EXTRA_V_FLAGS := $(EXTRA_V_FLAGS) --define "XSIM"
+
+
+compile: $(gendesign)
+	echo $(gendesign)
+	mkdir -p $(SIM_DIR)
+	# NOTE: the -Wno-WIDTH could be dangerous
+	cd $(SIM_DIR) && echo ${SRC} $(TEST_NAME).v |  tr ' ' '\n' | xargs  -I{} xvlog $(EXTRA_V_FLAGS) $(XSIM_ARGS) {}
+	cd $(SIM_DIR) && xelab  $(XSIM_ARGS) -debug typical $(TOP) -s $(TOP)_sim
+
+run: compile
+	echo Vivado XSIM Run
+	cd $(SIM_DIR) && xsim $(TOP)_sim -tclbatch $(CL_ROOT)/verif/scripts/waves.tcl
+
+clean:
+	rm -rf $(SIM_DIR)/

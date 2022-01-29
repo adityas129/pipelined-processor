@@ -1,0 +1,44 @@
+# sample script for running vivado synthesis
+# rm -rf ./xsim.dir
+# xvlog -nolog -sv mybench/top.sv \
+#   --define "DEC=decode" \
+#   --define "INS=data_in" \
+#   --define "RS1=rs1" \
+#   --define "RS2=rs2" \
+#   --define "RD=d_rd" \
+#   --define "FUNCT3=d_funct3" \
+#   --define "FUNCT7=d_funct7" \
+#   --define "IMM=d_immediate"  \
+#   --define "OPCODE=d_opcode"
+# xvlog -nolog -sv mybench/memory.sv
+# # xvlog -nolog -sv target/memory.v
+# xvlog -nolog -sv target/decoder.v \
+#   --define "BASE_ADDRESS=32'h0100000" \
+#   --define "INITIAL_DATA_FILE=\"/home/allen/pd2/rv32ui-p-add.x\""
+# xelab -debug typical top -s top_sim --nolog
+# xsim top_sim --R --nolog
+# rm *.jou *.log *.pb
+
+SRCLIST = $(shell cat $(CL_ROOT)/verif/scripts/design.f)
+SRC = $(addprefix $(CL_ROOT)/design/code/, $(SRCLIST)) $(CL_ROOT)/design/signals.h $(CL_ROOT)/verif/tests/clockgen.v $(CL_ROOT)/design/design_wrapper.v
+XSIM_ARGS = -i $(CL_ROOT)/design/ -i $(CL_ROOT)/design/code/ 
+TOP = top
+EXTRA_V_FLAGS := $(EXTRA_V_FLAGS) --define "XSIM" --define "MEM_PATH=$(MEM_PATH_STR)" --define MEM_DEPTH=$(MEM_DEPTH) --define "TEST_VECTOR=$(TEST_VECTOR_STR)"
+
+
+compile: $(gendesign)
+	echo $(gendesign)
+	mkdir -p $(SIM_DIR)
+	# NOTE: the -Wno-WIDTH could be dangerous
+	cd $(SIM_DIR) && echo ${SRC} $(TEST_NAME).v |  tr ' ' '\n' | while read x; do \
+		xvlog $(EXTRA_V_FLAGS) $(XSIM_ARGS) "$$x" $(WARN_OUTPUT); $(WARN_CHECK); \
+		done
+	cd $(SIM_DIR) && xelab  $(XSIM_ARGS) $(EXTRA_V_FLAGS) -debug typical $(TOP) -s $(TOP)_sim  $(WARN_OUTPUT)
+	$(WARN_CHECK)
+
+run: compile
+	echo Vivado XSIM Run
+	cd $(SIM_DIR) && xsim $(TOP)_sim -tclbatch $(CL_ROOT)/verif/scripts/waves.tcl
+
+clean:
+	rm -rf $(SIM_DIR)/

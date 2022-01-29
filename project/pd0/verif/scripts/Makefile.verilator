@@ -1,0 +1,26 @@
+SRCLIST = $(shell cat $(CL_ROOT)/verif/scripts/design.f)
+SRC = $(addprefix $(CL_ROOT)/design/code/, $(SRCLIST)) $(CL_ROOT)/verif/tests/clockgen.v $(CL_ROOT)/design/design_wrapper.v
+VFLAGS = -sv
+TOP = top
+PROG=$(CL_ROOT)/verif/tests/data/rv32ui-p-add.x
+
+# Normal tests, not c tests
+compile:
+	echo Verilator Compilation
+	mkdir -p $(SIM_DIR)
+	cd $(SIM_DIR) && verilator $(VFLAGS) \
+		--cc $(SRC) \
+		$(TEST_NAME).v \
+		--exe $(TEST_NAME).cpp  \
+		-I$(CL_ROOT)/design \
+		-top-module $(TOP) \
+		--Mdir $(SIM_DIR) \
+		+define+MEM_PATH_TO_PROGRAM="\"$(PROG)\""
+	make -C $(SIM_DIR) -f V$(TOP).mk V$(TOP)
+
+run: compile
+	echo Verilator Run
+	cd $(SIM_DIR) && ./V$(TOP)
+
+clean:
+	rm -rf $(SIM_DIR)
